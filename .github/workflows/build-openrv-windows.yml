@@ -1,0 +1,40 @@
+name: Build OpenRV Windows - Cégep de Matane
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build OpenRV Windows x64 Release
+    runs-on: windows-2022
+
+    steps:
+      - name: Checkout OpenRV
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Build OpenRV
+        uses: ./.github/actions/build-windows
+        with:
+          build-type: Release
+          qt-version: "6.5.3"
+          python-version: "3.11"
+          cmake-version: "3.31.6"
+          vfx-platform: "CY2025"
+          msvc-component: "14.40.17.10.x86.x64"
+          msvc-compiler: "14.40.33807"
+
+      - name: Create OpenRV package
+        shell: powershell
+        run: |
+          Compress-Archive `
+            -Path "_install\*" `
+            -DestinationPath "OpenRV-Windows-x64.zip"
+
+      - name: Upload OpenRV package
+        uses: actions/upload-artifact@v4
+        with:
+          name: OpenRV-Windows-x64
+          path: OpenRV-Windows-x64.zip
+          retention-days: 30
